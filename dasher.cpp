@@ -80,11 +80,13 @@ struct AnimData
 int main()
 {
 
-    const int fps{60};
-    const int w_width{512};
-    const int w_height{380};
+    int window_dims[2];
+    window_dims[0] = 512;
+    window_dims[1] = 380;
 
-    InitWindow(w_width, w_height, "Dasher");
+    const int fps{60};
+
+    InitWindow(window_dims[0], window_dims[1], "Dasher");
     SetTargetFPS(fps);
 
     int velocity{0};
@@ -97,15 +99,15 @@ int main()
     AnimData scarfy_data{};
     scarfy_data.init_anim(fps, 6, 1, scarfy_sheet);
     // exact center
-    scarfy_data.set_bounded_pos_x(w_width / 2);
-    scarfy_data.set_bounded_pos_y(w_height);
+    scarfy_data.set_bounded_pos_x(window_dims[0] / 2);
+    scarfy_data.set_bounded_pos_y(window_dims[1]);
 
     // nebula stuff
     Texture2D nebula_sheet = LoadTexture("textures/12_nebula_spritesheet.png"); // 8x8 spritesheet
     AnimData nebula_data{};
     nebula_data.init_anim(fps, 8, 8, nebula_sheet);
-    nebula_data.set_pos_x(w_width);
-    nebula_data.set_bounded_pos_y(w_height);
+    nebula_data.set_pos_x(window_dims[0]);
+    nebula_data.set_bounded_pos_y(window_dims[1]);
 
     const int nebula_velocity{-400}; // pixels per second
 
@@ -118,7 +120,7 @@ int main()
         // logics
 
         // ground check
-        if (scarfy_data.pos.y >= w_height - scarfy_data.rec.height)
+        if (scarfy_data.pos.y >= window_dims[1] - scarfy_data.rec.height)
         {
             velocity = 0;
             airborne = false;
@@ -140,7 +142,7 @@ int main()
         nebula_data.pos.x += (nebula_velocity * delta_time);
         if (nebula_data.pos.x < 0 - nebula_data.rec.width)
         {
-            nebula_data.set_pos_x(w_width);
+            nebula_data.set_pos_x(window_dims[0]);
         }
 
         // update nebula animation
