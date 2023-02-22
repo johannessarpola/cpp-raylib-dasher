@@ -17,7 +17,7 @@ struct AnimData
     float update_time;
     Box2D sprite_sheet;
 
-    void init_anim(int fps, int x_sprites_size, int y_sprites_size, Texture2D tex)
+    void init(int fps, int x_sprites_size, int y_sprites_size, Texture2D tex)
     {
         this->frame_set_size = x_sprites_size;
         this->frame = 0;
@@ -97,20 +97,20 @@ int main()
     // scarfy stuff
     Texture2D scarfy_sheet = LoadTexture("textures/scarfy.png");
     AnimData scarfy_data{};
-    scarfy_data.init_anim(fps, 6, 1, scarfy_sheet);
+    scarfy_data.init(fps, 6, 1, scarfy_sheet);
     // exact center
     scarfy_data.set_bounded_pos_x(window_dims[0] / 2);
     scarfy_data.set_bounded_pos_y(window_dims[1]);
 
     // nebula stuff
     Texture2D nebula_sheet = LoadTexture("textures/12_nebula_spritesheet.png"); // 8x8 spritesheet
-    
+
     const int size_of_nebulae{3};
     AnimData nebulae[size_of_nebulae]{};
 
-    for (int i = 0; i < size_of_nebulae; i++){
-        
-        nebulae[i].init_anim(fps, 8, 8, nebula_sheet);
+    for (int i = 0; i < size_of_nebulae; i++)
+    {
+        nebulae[i].init(fps, 8, 8, nebula_sheet);
         nebulae[i].set_bounded_pos_y(window_dims[1]);
         nebulae[i].set_pos_x(window_dims[0] + i * 300);
     }
