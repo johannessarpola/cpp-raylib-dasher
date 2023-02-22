@@ -93,17 +93,17 @@ int main()
     bool airborne = false;
 
     // scarfy stuff
-    Texture2D scarfy = LoadTexture("textures/scarfy.png");
+    Texture2D scarfy_sheet = LoadTexture("textures/scarfy.png");
     AnimData scarfy_data{};
-    scarfy_data.init_anim(fps, 6, 1, scarfy);
+    scarfy_data.init_anim(fps, 6, 1, scarfy_sheet);
     // exact center
     scarfy_data.set_bounded_pos_x(w_width / 2);
     scarfy_data.set_bounded_pos_y(w_height);
 
     // nebula stuff
-    Texture2D nebula = LoadTexture("textures/12_nebula_spritesheet.png"); // 8x8 spritesheet
+    Texture2D nebula_sheet = LoadTexture("textures/12_nebula_spritesheet.png"); // 8x8 spritesheet
     AnimData nebula_data{};
-    nebula_data.init_anim(fps, 8, 8, nebula);
+    nebula_data.init_anim(fps, 8, 8, nebula_sheet);
     nebula_data.set_pos_x(w_width);
     nebula_data.set_bounded_pos_y(w_height);
 
@@ -155,12 +155,12 @@ int main()
             scarfy_data.should_update_animation(delta_time);
         }
 
-        DrawTextureRec(nebula, nebula_data.rec, nebula_data.pos, WHITE);
-        DrawTextureRec(scarfy, scarfy_data.rec, scarfy_data.pos, WHITE);
+        DrawTextureRec(nebula_sheet, nebula_data.rec, nebula_data.pos, WHITE);
+        DrawTextureRec(scarfy_sheet, scarfy_data.rec, scarfy_data.pos, WHITE);
 
         EndDrawing();
     }
-    UnloadTexture(scarfy);
-    UnloadTexture(nebula);
+    UnloadTexture(scarfy_sheet);
+    UnloadTexture(nebula_sheet);
     CloseWindow();
 }
