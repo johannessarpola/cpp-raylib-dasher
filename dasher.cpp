@@ -1,6 +1,77 @@
 #include <cstdio>
 #include "raylib.h"
 
+struct Box2D {
+    int width;
+    int height; 
+};
+
+struct AnimData {
+    Rectangle rec;
+    Vector2 pos;
+    int frame_set_size;
+    int frame;
+    float running_time;
+    float update_time;
+    Box2D sprite_sheet;
+
+    void init_anim(int fps, int x_sprites_size, int y_sprites_size, Texture2D tex) { 
+        this->frame_set_size = x_sprites_size;
+        this->frame = 0;
+        this->running_time = 0.0;
+        this->update_time = 1.0 /(fps/(x_sprites_size - 1));
+        this->rec.width = tex.width / x_sprites_size;
+        this->rec.height = tex.height / y_sprites_size;
+        this->sprite_sheet.width = tex.width;
+        this->sprite_sheet.height = tex.height;
+        this->rec.x = 0.0;
+        this->rec.y = 0.0;
+    }
+    void should_update_animation(float delta) {
+        this->running_time += delta;
+        if(this->running_time >= this->update_time) {
+            this->next_frame();
+            this->running_time = 0;
+        }
+    }
+    void next_frame() {
+        this->rec.x = this->frame * (this->sprite_sheet.width / this->frame_set_size);
+        frame++;
+        if(frame == frame_set_size) {
+            frame = 0;
+        }
+    }
+    /*
+     * Sets the position in regards to the box size
+    */
+    void set_bounded_pos_x(int x) {
+        this->pos.x = x - this->rec.width/2;
+    }
+
+    /*
+     * Sets the position in regards to the box size
+    */
+    void set_bounded_pos_y(int y) {
+        this->pos.y =  y - this->rec.height;
+    }
+
+    /*
+     * Sets the position in regards to the box size
+    */
+    void set_pos_x(int x) {
+        this->pos.x = x;
+    }
+
+    /*
+     * Sets the position in regards to the box size
+    */
+    void set_pos_y(int y) {
+        this->pos.y =  y;
+    }
+};
+
+
+
 int main() {
 
     const int fps{60};
@@ -17,34 +88,22 @@ int main() {
 
 
     // scarfy stuff
-    const int scarfy_frame_nbr{6};
     Texture2D scarfy = LoadTexture("textures/scarfy.png");
-    Rectangle scarfy_rec;
-    scarfy_rec.width = scarfy.width/6;
-    scarfy_rec.height = scarfy.height;
-    scarfy_rec.x = 0;
-    scarfy_rec.y = 0;
-
-    Vector2 scarfy_pos;
+    AnimData scarfy_data{};
+    scarfy_data.init_anim(fps, 6, 1, scarfy);
     // exact center
-    scarfy_pos.x = w_width/2 - scarfy_rec.width/2;
-    scarfy_pos.y = w_height - scarfy_rec.height;
-    int scarfy_frame{};
+    scarfy_data.set_bounded_pos_x(w_width/2);
+    scarfy_data.set_bounded_pos_y(w_height);
 
     // nebula stuff
-    const int nebula_animation_frames{8};
-    const int nebula_velocity{-400}; // pixels per second
     Texture2D nebula = LoadTexture("textures/12_nebula_spritesheet.png"); // 8x8 spritesheet
-    Rectangle nebula_rec{0.0, 0.0, nebula.width/8, nebula.height/8};
-    Vector2 nebula_pos{w_width, w_height - nebula_rec.height};
-    int nebula_frame{};
-    const float nebula_update_time{1.0 /(fps/(nebula_animation_frames - 1))};
-    float nebula_running_time{};
-
-    // amount of time before it should update the animation frame
-    const float scarfy_update_time{1.0 /(fps/(scarfy_frame_nbr - 1))}; // fps/amount of frames in the animation
-    float scarfy_running_time{};
-
+    AnimData nebula_data{};
+    nebula_data.init_anim(fps, 8, 8, nebula);
+    nebula_data.set_pos_x(w_width);
+    nebula_data.set_bounded_pos_y(w_height);
+    
+    const int nebula_velocity{-400}; // pixels per second
+    
     while (!WindowShouldClose())
     {
         const float delta_time{GetFrameTime()}; // time since last frame
@@ -54,7 +113,7 @@ int main() {
         // logics
 
         // ground check
-        if(scarfy_pos.y >= w_height - scarfy_rec.height)  {
+        if(scarfy_data.pos.y >= w_height - scarfy_data.rec.height)  {
             velocity = 0;
             airborne = false;
         // rec in air
@@ -69,42 +128,25 @@ int main() {
             velocity += jump_velocity;
         }
         // move nebuls
-        nebula_pos.x += (nebula_velocity * delta_time);
-        if(nebula_pos.x < 0 - nebula_rec.width) {
-            nebula_pos.x = w_width;
+        nebula_data.pos.x += (nebula_velocity * delta_time);
+        if(nebula_data.pos.x  < 0 - nebula_data.rec.width) {
+            nebula_data.set_pos_x(w_width);
         }
+
 
         // update nebula animation
-        nebula_running_time += delta_time;
-        if(nebula_running_time >= nebula_update_time) {
-            nebula_rec.x = nebula_frame * (nebula.width/nebula_animation_frames);
-            nebula_frame++;
-            if(nebula_frame == nebula_animation_frames) {
-                nebula_frame = 0;
-            }
-            nebula_running_time = 0;
-        }
+        nebula_data.should_update_animation(delta_time);
 
-
-        scarfy_pos.y += (velocity * delta_time);
+        scarfy_data.pos.y += (velocity * delta_time);
 
         // animate scarfy
         // no need to animate when in air
         if(!airborne) {
-            scarfy_running_time += delta_time;
-            if(scarfy_running_time >= scarfy_update_time) {
-                scarfy_rec.x = scarfy_frame * (scarfy.width/scarfy_frame_nbr);
-                scarfy_frame++;
-                // reset animation
-                if(scarfy_frame == scarfy_frame_nbr) {
-                    scarfy_frame = 0;
-                }
-                scarfy_running_time = 0;
-            }
+            scarfy_data.should_update_animation(delta_time);
         }
 
-        DrawTextureRec(nebula, nebula_rec, nebula_pos, WHITE);
-        DrawTextureRec(scarfy, scarfy_rec, scarfy_pos, WHITE);
+        DrawTextureRec(nebula, nebula_data.rec, nebula_data.pos, WHITE);
+        DrawTextureRec(scarfy, scarfy_data.rec, scarfy_data.pos, WHITE);
 
         EndDrawing();
     }
