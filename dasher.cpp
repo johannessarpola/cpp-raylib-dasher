@@ -71,6 +71,11 @@ struct AnimData
         this->pos.x = x;
     }
 
+    void add_pos_x(int x)
+    {
+        this->pos.x += x;
+    }
+
     void set_pos_y(int y)
     {
         this->pos.y = y;
@@ -112,7 +117,7 @@ int main()
     {
         nebulae[i].init(fps, 8, 8, nebula_sheet);
         nebulae[i].set_bounded_pos_y(window_dims[1]);
-        nebulae[i].set_pos_x(window_dims[0] + i * 300);
+        nebulae[i].set_pos_x(window_dims[0] + 150 * i);
     }
 
     const int nebula_velocity{-400}; // pixels per second
@@ -121,7 +126,7 @@ int main()
     {
         const float delta_time{GetFrameTime()}; // time since last frame
         BeginDrawing();
-        ClearBackground(WHITE);
+        ClearBackground(GREEN);
 
         // logics
 
@@ -144,15 +149,25 @@ int main()
         {
             velocity += jump_velocity;
         }
-        // move nebuls
-        nebulae[0].pos.x += (nebula_velocity * delta_time);
-        if (nebulae[0].pos.x < 0 - nebulae[0].rec.width)
-        {
-            nebulae[0].set_pos_x(window_dims[0]);
-        }
+        // // move nebuls
+        // nebulae[0].pos.x += (nebula_velocity * delta_time);
+        // if (nebulae[0].pos.x < 0 - nebulae[0].rec.width)
+        // {
+        //     nebulae[0].set_pos_x(window_dims[0]);
+        // }
 
-        // update nebula animation
-        nebulae[0].should_update_animation(delta_time);
+        //for (AnimData neb : nebulae)
+        for (int i = 0; i < size_of_nebulae; i++)
+        {
+            nebulae[i].pos.x += (nebula_velocity * delta_time);
+            nebulae[i].should_update_animation(delta_time);
+            if (nebulae[i].pos.x < 0 - nebulae[i].rec.width)
+            {
+                // Reset
+                nebulae[i].add_pos_x(window_dims[0] + nebulae[i].rec.width);
+            }
+            DrawTextureRec(nebula_sheet, nebulae[i].rec, nebulae[i].pos, WHITE);
+        }
 
         scarfy_data.pos.y += (velocity * delta_time);
 
@@ -163,9 +178,7 @@ int main()
             scarfy_data.should_update_animation(delta_time);
         }
 
-        DrawTextureRec(nebula_sheet, nebulae[0].rec, nebulae[0].pos, WHITE);
         DrawTextureRec(scarfy_sheet, scarfy_data.rec, scarfy_data.pos, WHITE);
-
         EndDrawing();
     }
     UnloadTexture(scarfy_sheet);
