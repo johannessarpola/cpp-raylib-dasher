@@ -149,14 +149,7 @@ int main()
         {
             velocity += jump_velocity;
         }
-        // // move nebuls
-        // nebulae[0].pos.x += (nebula_velocity * delta_time);
-        // if (nebulae[0].pos.x < 0 - nebulae[0].rec.width)
-        // {
-        //     nebulae[0].set_pos_x(window_dims[0]);
-        // }
-
-        //for (AnimData neb : nebulae)
+        // move nebuls
         for (int i = 0; i < size_of_nebulae; i++)
         {
             nebulae[i].pos.x += (nebula_velocity * delta_time);
