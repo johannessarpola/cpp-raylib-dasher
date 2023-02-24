@@ -1,4 +1,5 @@
 #include <cstdio>
+#include <stdlib.h>
 #include "raylib.h"
 
 struct Box2D
@@ -82,6 +83,11 @@ struct AnimData
     }
 };
 
+bool is_on_ground(AnimData data, int window_height) 
+{
+    return data.pos.y >= window_height - data.rec.height;
+}
+
 int main()
 {
 
@@ -98,6 +104,9 @@ int main()
     const int gravity{1200};       // pixels per second
     const int jump_velocity{-650}; // pixels per second
     bool airborne = false;
+
+    // background
+    Texture2D bg = LoadTexture("textures/far-buildings.png");
 
     // scarfy stuff
     Texture2D scarfy_sheet = LoadTexture("textures/scarfy.png");
@@ -117,11 +126,14 @@ int main()
     {
         nebulae[i].init(fps, 8, 8, nebula_sheet);
         nebulae[i].set_bounded_pos_y(window_dims[1]);
-        nebulae[i].set_pos_x(window_dims[0] + 150 * i);
+        nebulae[i].set_pos_x(window_dims[0] + 400 * i);
     }
+    float bg_x{};
+    Vector2 bgs[2]{};
 
     const int nebula_velocity{-400}; // pixels per second
 
+    
     while (!WindowShouldClose())
     {
         const float delta_time{GetFrameTime()}; // time since last frame
@@ -129,9 +141,23 @@ int main()
         ClearBackground(GREEN);
 
         // logics
+        // draw background
+
+
+        bg_x -= 20 * delta_time;
+        if (bg_x <= -bg.width*2)
+        {
+            bg_x = 0.0;
+        }
+
+        bgs[0].x = bg_x;
+        bgs[1].x = bg_x + bg.width * 2;
+
+        DrawTextureEx(bg, bgs[0], 0.0, 2.0, WHITE);
+        DrawTextureEx(bg, bgs[1], 0.0, 2.0, WHITE);
 
         // ground check
-        if (scarfy_data.pos.y >= window_dims[1] - scarfy_data.rec.height)
+        if (is_on_ground(scarfy_data, window_dims[1]))
         {
             velocity = 0;
             airborne = false;
@@ -154,10 +180,13 @@ int main()
         {
             nebulae[i].pos.x += (nebula_velocity * delta_time);
             nebulae[i].should_update_animation(delta_time);
+            int add_x{};
             if (nebulae[i].pos.x < 0 - nebulae[i].rec.width)
             {
                 // Reset
-                nebulae[i].add_pos_x(window_dims[0] + nebulae[i].rec.width);
+                int rand_d = (rand() % 5 + 1) * nebulae[i].rec.width * 2;
+                add_x = window_dims[0] + nebulae[i].rec.width + rand_d;
+                nebulae[i].add_pos_x(add_x);
             }
             DrawTextureRec(nebula_sheet, nebulae[i].rec, nebulae[i].pos, WHITE);
         }
@@ -176,5 +205,6 @@ int main()
     }
     UnloadTexture(scarfy_sheet);
     UnloadTexture(nebula_sheet);
+    UnloadTexture(bg);
     CloseWindow();
 }
